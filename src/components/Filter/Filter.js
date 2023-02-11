@@ -1,4 +1,4 @@
-import { filerContact, setFilter } from '../../redux/filterSlice';
+import { filterContact, setFilter } from '../../redux/filterSlice';
 import {Box, Label, Input} from './Filter.styled';
 import { useSelector, useDispatch} from 'react-redux';
 
@@ -8,7 +8,7 @@ export const Filter = () => {
 
     const handleChange = e => {
         const { value } = e.currentTarget;
-        dispatch(filerContact(value));
+        dispatch(filterContact(value));
     };
 
 
