@@ -1,44 +1,21 @@
-import { useEffect} from 'react';
-import { nanoid } from 'nanoid';
 import { ContactForm }  from './ContactForm/ContactForm';
 import { Filter } from './Filter/Filter';
+import * as React from 'react';
 import { ContactList } from './ContactList/ContactList';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {MainTitle, Title} from './App.styled';
-import { useSelector, useDispatch} from 'react-redux';
-import { addContact, delContact, getContacts } from '../redux/contactSlice';
-import { filerContact, setFilter } from '../redux/filterSlice';
+import { useSelector } from 'react-redux';
+import { setFilter } from '../redux/filterSlice';
+import { useFetchContactsQuery, useDeleteContactMutation } from '../redux/contactSlice';
+import {Loader} from './Loader/Loader';
 
-
-export function App() {
-  const dispatch = useDispatch();
-  const contacts = useSelector(getContacts);
+export const App = () => {
+  const { data: contacts, isFetching } = useFetchContactsQuery();
+  const [deleteContact, {isLoading}] = useDeleteContactMutation();
   const filter = useSelector(setFilter);
 
- const handleSubmit = e => {
-    const id = nanoid();
-    const name = e.name;
-    const number = e.number;
-    const contactsLists = [...contacts];
-
-    if (contactsLists.findIndex(contact => name === contact.name) !== -1) {
-      alert(`${name} is already in contacts.`);
-    } else {
-      contactsLists.push({ name, id, number });
-    }
- 
-  dispatch(addContact(contactsLists));
-  };
-  
-  const handleChange = e => {
-    const { value } = e.target;
-    dispatch(filerContact(value));
-  };
-
-    const deleteContact = contactId => {
-    dispatch(delContact(contactId));
-};
-
-  const getFilteredContacts = () => {
+    const getFilteredContacts = () => {
     const filterContactsList = contacts.filter(contact => {
       return contact.name
         .toLowerCase()
@@ -47,27 +24,15 @@ export function App() {
 
     return filterContactsList;
   };
-
-  useEffect(() => {
-    window.localStorage.setItem('contacts', JSON.stringify(contacts));
-  }, [contacts]);
-
- 
-    return (
-      <div>
-        <MainTitle>Phonebook</MainTitle>
-        <ContactForm 
-         onSubmit={handleSubmit}
-        />
-
-        <Title>Contacts</Title>
-        <Filter filter={filter} handleChange={handleChange}/>
-        <ContactList contacts={getFilteredContacts()}
-        onDeleteContact={deleteContact}
-        />
-      </div>
-    )
-  
+  return (
+  <div>
+    <MainTitle>Phonebook</MainTitle>
+    <ContactForm />
+    <Title>Contacts</Title>
+    <Filter />
+    {isFetching && <Loader/>}
+    {contacts && <ContactList contacts={getFilteredContacts()} onDeleteContact={deleteContact} loading={isLoading}/>}
+    <ToastContainer autoClose={3000} theme="colored"/>
+    </div>
+  )
 };
-
-export default App;
