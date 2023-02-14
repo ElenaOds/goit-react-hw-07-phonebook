@@ -1,62 +1,56 @@
-import { useAddContactMutation, useFetchContactsQuery } from '../../redux/contactSlice';
 import { useState } from 'react';
 import {Form, Label, Input, Button} from './ContactForm.styled';
-import { Loader } from '../Loader/Loader';
-import { toast } from 'react-toastify';
+import { useDispatch, useSelector } from 'react-redux';
+import { contactsOperations, contactsSelectors } from '../../redux/contacts';
 
-export const ContactForm = () => {
-    const [addContact, {isLoading}] = useAddContactMutation();
-    const { data } = useFetchContactsQuery();
-      const [name, setName] = useState('');
-      const [number, setNumber] = useState('');
+  export const ContactForm = () => {
+    const dispatch = useDispatch();
+    const contacts = useSelector(contactsSelectors.getContacts);
+    const [name, setName] = useState('');
+    const [number, setNumber] = useState('');
+ 
+    const handleChange = e => {
+      const { name, value } = e.target;
+      
+      switch (name) {
+        case 'name':
+          setName(value);
+          break;
 
-      const handleChange = e => {
-              const { name, value } = e.target;
-              
-              switch (name) {
-                case 'name':
-                  setName(value);
-                  break;
-        
-                case 'number':
-                  setNumber(value);
-                  break;
-        
-                  default:
-                    return;
-              }
-            };
+        case 'number':
+          setNumber(value);
+          break;
 
-    const handleSubmit = async e => {
-              e.preventDefault(); 
-              const contact = {
-                name,
-                phone: number,
-              };
+          default:
+            return;
+      }
+    };
+    
+    const handleSubmit = e => {
+      e.preventDefault(); 
+      const newContact = { 
+        name, 
+        phone: number,
+      };
+      const existingContact  = contacts.find(
+        contact => contact.name === name || contact.phone === number
+      );
+      if(existingContact) {
+        alert(`${name} is already in contacts.`);
+        return;
+      } else {
+      dispatch(contactsOperations.addContact(newContact));
+      reset();  
+    } 
+  };
 
-              const existingContact  = data.find(
-                contact => contact.name === name || contact.phone === number
-              );
-            try {
-                if(existingContact) {
-                    toast.error(`${name} is already in contacts.`);
-                    return
-                  }
-                await addContact (contact);
-                reset();  
-              } catch (error) {
-                console.log("error")
-              }
-            };
-
-            const reset = () => {
-                      setName('');
-                      setNumber('');
-                    };
-
-    return(
+  const reset = () => {
+    setName('');
+    setNumber('');
+  };
+      return (
         <Form onSubmit={handleSubmit}>
-            <Label> Name </Label>
+          <Label> Name </Label>
           <Input
             type="text"
             name="name"
@@ -78,10 +72,10 @@ export const ContactForm = () => {
             value={number}
             onChange={handleChange}
           />
-          <Button type="submit" disables={isLoading}>
-            {isLoading && <Loader/>}
+          <Button type="submit">
             Add contact
           </Button>
         </Form>
-    )
-}
+      );
+  };
+  

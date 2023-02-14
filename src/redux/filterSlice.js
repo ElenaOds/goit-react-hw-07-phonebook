@@ -7,12 +7,11 @@ export const filterSlice = createSlice({
     },
    
     reducers: {
-        filterContact(state, action) {
+        filerContact(state, action) {
             state.filter = action.payload;    
         },
     },
 });
 
-export const { filterContact } = filterSlice.actions; 
+export const { filerContact } = filterSlice.actions; 
 
-export const setFilter = state => state.filter.filter;
